@@ -385,7 +385,7 @@ module "eks" {
       name = "eksdemo-ng"
 
       instance_types = [
-        "t3.small"
+        "m7i-flex.large"
       ]
 
       min_size = 1
