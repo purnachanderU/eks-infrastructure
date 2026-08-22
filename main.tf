@@ -118,7 +118,6 @@ resource "aws_ecr_repository" "python_registration" {
 # =========================================================
 
 resource "aws_iam_openid_connect_provider" "github" {
-
   url = "https://token.actions.githubusercontent.com"
 
   client_id_list = [
@@ -128,15 +127,12 @@ resource "aws_iam_openid_connect_provider" "github" {
   tags = local.common_tags
 }
 
-
 # =========================================================
 # GITHUB ACTIONS TRUST POLICY
 # =========================================================
 
 data "aws_iam_policy_document" "github_assume_role" {
-
   statement {
-
     effect = "Allow"
 
     actions = [
@@ -144,7 +140,6 @@ data "aws_iam_policy_document" "github_assume_role" {
     ]
 
     principals {
-
       type = "Federated"
 
       identifiers = [
@@ -152,9 +147,8 @@ data "aws_iam_policy_document" "github_assume_role" {
       ]
     }
 
-    # GitHub audience
+    # GitHub OIDC audience
     condition {
-
       test = "StringEquals"
 
       variable = "token.actions.githubusercontent.com:aud"
@@ -164,27 +158,27 @@ data "aws_iam_policy_document" "github_assume_role" {
       ]
     }
 
-    # Only your GitHub repository
+    # GitHub repository branches
     condition {
-
       test = "StringLike"
 
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:${var.github_repository}:*"
+        "repo:${var.github_repository}:ref:refs/heads/dev",
+        "repo:${var.github_repository}:ref:refs/heads/stage",
+        "repo:${var.github_repository}:ref:refs/heads/uat",
+        "repo:${var.github_repository}:ref:refs/heads/prod"
       ]
     }
   }
 }
-
 
 # =========================================================
 # GITHUB ACTIONS IAM ROLE
 # =========================================================
 
 resource "aws_iam_role" "github_actions" {
-
   name = "${local.name}-github-actions"
 
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
